@@ -1,0 +1,110 @@
+---
+title: "Applied Statistics Mini Project (Spring 2017)"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Math 7343 Mini Project
+
+### Visual Analysis
+
+```{r}
+library(readxl)
+detroit <- read_excel("~/Documents/Data Files/detroit.xlsx")
+plot(homicide ~ police, data = detroit)
+abline(lm(homicide ~ police, data = detroit))
+```
+
+This graph shows a linear relationship that shows a strong, positive, and highly correlated relationship between between the two variables.  This means that when there are more police, there tends to be more homicides.
+
+```{r}
+plot(homicide ~ umemp, data = detroit)
+abline(lm(homicide ~ umemp, data = detroit))
+```
+
+This graph shows a slight linear relationship that is pretty weak, positive and does not have a highly correlated relationship between the two variables.  This means we cannot determine whether unemployment affects the amount of homicides.
+
+```{r}
+plot(homicide ~ register, data = detroit)
+abline(lm(homicide ~ register, data = detroit))
+```
+
+The graph shows a linear relationship that is strong, positive and has a moderately correlated relationship between the two variables.  This means as the amount of handgun registers increases, the amount of homicides will probably increase. 
+
+```{r}
+plot(homicide ~ weekly, data = detroit)
+abline(lm(homicide ~ weekly, data = detroit))
+```
+
+The graph shows a linear relationship that is strong, positive and has a moderately correlated relationship between the two variables.  This means as the amount of weekly earnings increases, the amount of homicides will probably increase. 
+
+### Linear Regression Models
+
+```{r}
+reg.fit <- lm(homicide ~ police, data = detroit)
+reg.fit1 <- lm(homicide ~ umemp, data = detroit)
+reg.fit2 <- lm(homicide ~ register, data = detroit)
+reg.fit3 <- lm(homicide ~ weekly, data = detroit)
+```
+
+```{r}
+summary(reg.fit)
+summary(reg.fit1)
+summary(reg.fit2)
+summary(reg.fit3)
+```
+
+The variables of police, handgun registration, and weekly earnings are considered to be statistically significant as their p-values – 1.13 multiplied by 10^(-7), 6.6 multiplied by 10^(-4), and 5.01 multiplied by 10^(-5) respectively – are less than the 0.05 significance level.  The unemployment variable has a p-value of 0.4908, which is a lot larger than the 0.05 significance level.  The p-values represent the probability that the effect we see comes from chance, so the three identified as significant have very low probabilities of being the result of random chance, while the unemployment rate is about even odds that the effect is the result of random chance.
+
+The adjusted R-squared values for police, unemployment, handgun registration, and weekly earnings are 0.923, -0.0427, 0.636, and 0.769 respectively.  This means that the police variable explains the largest percentage of variation in the homicide rate.  We came to this conclusion since R-squared is used to provide the proportion of variation in the response that is attributable to the explanatory variable, it is the best value to use to determine which explanatory variable explains the largest proportion of the response variance.
+
+### Multiple Linear Regression Model
+
+```{r}
+reg.fit4 <- lm(formula = homicide ~ police + umemp + register + weekly, data = detroit)
+library(MASS)
+step <- stepAIC(reg.fit4, direction = "both")
+```
+
+By using the stepwise selection method, we were able to determine that the best multiple regression model has police and registered handguns per 100,000 as the explanatory values for homicide rates.  
+
+```{r}
+summary(lm(homicide ~ police + register, data = detroit))
+```
+
+It can be assumed that the chance of such a relationship being the result of pure chance is miniscule and these two explanatory variables account for 96.12% of the variables in the response variable by looking at the p-value of 3.551*10-8 and the adjusted R-squared value of 0.9612.
+
+The appropriate model for this relationship is: y = -64.963 + 0.26993x + 0.01447z
+
+If the number of registered handguns is held constant, then the model indicates that each additional police officer is correlated with an additional .26993 homicides, while if the number of police officers is held constant, then the model indicates that each additional handgun is correlated with an additional .0145 homicides. Therefore, the number of police officers explains the larger percentage of variation in the homicide rate.
+
+### Prediction 
+
+```{r}
+predict(reg.fit4, newdata = detroit[10,], interval = "prediction")
+```
+
+The 95% confidence interval is 26.87764 to 44.31768 homicides per 100,00 people in the year 1970.
+
+### Regression Plots
+
+```{r}
+plot(reg.fit4)
+```
+
+The Residual vs Fitted plot shows some outliers, but for the most part, the values lie near zero which indicates that the model is not biased in one direction or the other.  Residuals are the difference between the actual values and the predicted values from the linear model, and if they were very large or found mostly on one side of zero, it would cast doubt on the validity of the model.  This model is considered a good predictive one since the residuals are small values that are balanced on either side of zero.
+
+<br>
+
+The Normal Q-Q plot still show one outlier, but is considered a better model as all the other values are found right along the line that has a slope of 1.  This confirms the normality of the data given in the problem.   The Normal Q-Q plot plots the standardized quantiles against the theoretical quantiles. That is, it plots the values actually predicted by your model against the values one would expect if it was perfectly accurate and perfectly normal.
+
+<br>
+
+The Scale-Location plot shows that the residuals appear randomly spread.  This confirms the assumption that there is equal variance in the data.
+
+<br>
+
+The Residuals vs Leverage plot shows that there are no influential cases in the data.  Even though the Cook's distance lines arevisible, most of the data points are well inside these distance lines - with the exception of 1 outlier.
